@@ -1,0 +1,23 @@
+{
+  "name": "planora-workspace",
+  "version": "1.0.0",
+  "description": "Planora — AI-Powered Study Planner",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "start:server": "npm --prefix server start",
+    "build:client": "npm --prefix client run build"
+  },
+  "keywords": [
+    "study-planner",
+    "ai",
+    "react",
+    "express",
+    "mongodb",
+    "postgresql"
+  ],
+  "author": "Planora Team",
+  "license": "MIT"
+}
