@@ -10,7 +10,8 @@
     "start:server": "npm --prefix server start",
     "build:client": "npm --prefix client run build",
     "db:init": "npm --prefix server run db:init",
-    "db:test": "npm --prefix server run db:test"
+    "db:test": "npm --prefix server run db:test",
+    "test:foundation": "npm --prefix server run test:foundation"
   },
   "keywords": [
     "study-planner",
