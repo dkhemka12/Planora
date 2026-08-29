@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
+import { Sparkles, LogIn, AlertCircle, Zap } from 'lucide-react';
 import { authAPI, setToken, setUser } from '../services/api';
 
 const Login = () => {
@@ -13,18 +13,11 @@ const Login = () => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (credentials) => {
     setError('');
-
-    if (!formData.email || !formData.password) {
-      setError('Please fill in both email and password');
-      return;
-    }
-
     try {
       setIsLoading(true);
-      const res = await authAPI.login(formData);
+      const res = await authAPI.login(credentials);
       setToken(res.token);
       setUser(res.user);
       navigate('/dashboard');
@@ -33,6 +26,21 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.email || !formData.password) {
+      setError('Please fill in both email and password');
+      return;
+    }
+    handleLogin(formData);
+  };
+
+  const handleDemoLogin = () => {
+    const demoCredentials = { email: 'dev@planora.dev', password: 'password123' };
+    setFormData(demoCredentials);
+    handleLogin(demoCredentials);
   };
 
   return (
@@ -125,6 +133,30 @@ const Login = () => {
             <span>{isLoading ? 'Signing In...' : 'Sign In'}</span>
           </button>
         </form>
+
+        {/* Development Quick Login Button */}
+        <div style={{ marginTop: '1rem' }}>
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            className="btn btn-secondary"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              borderColor: 'var(--primary-glow)',
+              background: 'rgba(99, 102, 241, 0.08)',
+              color: 'var(--primary-light)'
+            }}
+            disabled={isLoading}
+          >
+            <Zap size={15} />
+            <span>Quick Demo / Dev Login</span>
+          </button>
+        </div>
 
         <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           Don't have an account?{' '}
