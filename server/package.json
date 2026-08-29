@@ -6,7 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "db:init": "node config/initPostgres.js",
+    "db:test": "node scripts/verifyPhase2.js",
+    "db:test-pg": "node scripts/testPostgres.js",
+    "db:test-mongo": "node scripts/testMongo.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
