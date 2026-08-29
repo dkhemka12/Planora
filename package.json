@@ -11,7 +11,8 @@
     "build:client": "npm --prefix client run build",
     "db:init": "npm --prefix server run db:init",
     "db:test": "npm --prefix server run db:test",
-    "test:foundation": "npm --prefix server run test:foundation"
+    "test:foundation": "npm --prefix server run test:foundation",
+    "test:auth": "npm --prefix server run test:auth"
   },
   "keywords": [
     "study-planner",
