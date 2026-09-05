@@ -13,7 +13,8 @@
     "db:test-mongo": "node scripts/testMongo.js",
     "test:foundation": "node scripts/testBackendFoundation.js",
     "test:auth": "node scripts/testAuth.js",
-    "test:subjects": "node scripts/testSubjects.js"
+    "test:subjects": "node scripts/testSubjects.js",
+    "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

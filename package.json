@@ -13,7 +13,8 @@
     "db:test": "npm --prefix server run db:test",
     "test:foundation": "npm --prefix server run test:foundation",
     "test:auth": "npm --prefix server run test:auth",
-    "test:subjects": "npm --prefix server run test:subjects"
+    "test:subjects": "npm --prefix server run test:subjects",
+    "check:gemini": "npm --prefix server run check:gemini"
   },
   "keywords": [
     "study-planner",
