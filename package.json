@@ -14,6 +14,7 @@
     "test:foundation": "npm --prefix server run test:foundation",
     "test:auth": "npm --prefix server run test:auth",
     "test:subjects": "npm --prefix server run test:subjects",
+    "test:tasks": "npm --prefix server run test:tasks",
     "check:gemini": "npm --prefix server run check:gemini"
   },
   "keywords": [

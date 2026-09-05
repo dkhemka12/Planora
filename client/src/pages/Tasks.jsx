@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Filter, AlertCircle, Loader2, Search } from 'lucide-react';
+import { Plus, AlertCircle, Loader2, Search } from 'lucide-react';
 import TaskList from '../components/TaskList';
 import TaskForm from '../components/TaskForm';
 import { taskAPI, subjectAPI } from '../services/api';
@@ -24,12 +24,16 @@ const Tasks = () => {
     try {
       setIsLoading(true);
       setError('');
-      const [tasksData, subjectsData] = await Promise.all([
-        taskAPI.getAll().catch(() => []),
-        subjectAPI.getAll().catch(() => []),
+      const [tasksRes, subjectsRes] = await Promise.all([
+        taskAPI.getAll().catch(() => ({ data: [] })),
+        subjectAPI.getAll().catch(() => ({ data: [] })),
       ]);
-      setTasks(Array.isArray(tasksData) ? tasksData : []);
-      setSubjects(Array.isArray(subjectsData) ? subjectsData : []);
+
+      const tasksList = Array.isArray(tasksRes) ? tasksRes : (tasksRes?.data || []);
+      const subjectsList = Array.isArray(subjectsRes) ? subjectsRes : (subjectsRes?.data || []);
+
+      setTasks(tasksList);
+      setSubjects(subjectsList);
     } catch (err) {
       setError(err.message || 'Failed to fetch tasks');
     } finally {
@@ -46,12 +50,14 @@ const Tasks = () => {
       setIsSubmitting(true);
       setError('');
       if (editingTask) {
-        const updated = await taskAPI.update(editingTask._id, formData);
-        setTasks(prev => prev.map(t => (t._id === editingTask._id ? updated : t)));
+        const res = await taskAPI.update(editingTask._id, formData);
+        const updated = res?.data || res;
+        setTasks((prev) => prev.map((t) => (t._id === editingTask._id ? updated : t)));
         setSuccessMsg(`Task "${updated.title}" updated successfully!`);
       } else {
-        const created = await taskAPI.create(formData);
-        setTasks(prev => [created, ...prev]);
+        const res = await taskAPI.create(formData);
+        const created = res?.data || res;
+        setTasks((prev) => [created, ...prev]);
         setSuccessMsg(`Task "${created.title}" created successfully!`);
       }
       setShowForm(false);
@@ -66,10 +72,20 @@ const Tasks = () => {
 
   const handleToggleStatus = async (task) => {
     const nextStatus = task.status === 'completed' ? 'pending' : 'completed';
+    // Optimistic UI update
+    setTasks((prev) =>
+      prev.map((t) => (t._id === task._id ? { ...t, status: nextStatus } : t))
+    );
+
     try {
-      const updated = await taskAPI.update(task._id, { status: nextStatus });
-      setTasks(prev => prev.map(t => (t._id === task._id ? updated : t)));
+      const res = await taskAPI.update(task._id, { status: nextStatus });
+      const updated = res?.data || res;
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? updated : t)));
     } catch (err) {
+      // Rollback on error
+      setTasks((prev) =>
+        prev.map((t) => (t._id === task._id ? { ...t, status: task.status } : t))
+      );
       setError('Failed to update task status');
     }
   };
@@ -84,7 +100,7 @@ const Tasks = () => {
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
       await taskAPI.delete(id);
-      setTasks(prev => prev.filter(t => t._id !== id));
+      setTasks((prev) => prev.filter((t) => t._id !== id));
       setSuccessMsg('Task deleted successfully');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
@@ -93,14 +109,15 @@ const Tasks = () => {
   };
 
   // Filter tasks
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasks = tasks.filter((task) => {
     const matchesSubject = !subjectFilter || String(task.subjectId) === String(subjectFilter);
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-    const matchesSearch = !searchQuery || 
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch =
+      !searchQuery ||
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     return matchesSubject && matchesStatus && matchesPriority && matchesSearch;
   });
 
@@ -135,7 +152,7 @@ const Tasks = () => {
           background: 'var(--accent-rose-bg)',
           color: 'var(--accent-rose)',
           marginBottom: '1.5rem',
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
         }}>
           <AlertCircle size={16} />
           <span>{error}</span>
@@ -149,7 +166,7 @@ const Tasks = () => {
           background: 'var(--accent-emerald-bg)',
           color: 'var(--accent-emerald)',
           marginBottom: '1.5rem',
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
         }}>
           {successMsg}
         </div>
@@ -186,7 +203,7 @@ const Tasks = () => {
             onChange={(e) => setSubjectFilter(e.target.value)}
           >
             <option value="">All Subjects</option>
-            {subjects.map(s => (
+            {subjects.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>

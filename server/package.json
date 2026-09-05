@@ -14,6 +14,7 @@
     "test:foundation": "node scripts/testBackendFoundation.js",
     "test:auth": "node scripts/testAuth.js",
     "test:subjects": "node scripts/testSubjects.js",
+    "test:tasks": "node scripts/testTasks.js",
     "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {

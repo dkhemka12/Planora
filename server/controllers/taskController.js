@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Task } from '../models/Task.js';
 
 /**
@@ -9,14 +10,14 @@ export const getTasks = async (req, res, next) => {
   try {
     const filter = { userId: String(req.user.id) };
 
-    // Optional query parameters for filtering
+    // Optional query filters
     if (req.query.subjectId) {
       filter.subjectId = req.query.subjectId;
     }
-    if (req.query.status) {
+    if (req.query.status && req.query.status !== 'all') {
       filter.status = req.query.status;
     }
-    if (req.query.priority) {
+    if (req.query.priority && req.query.priority !== 'all') {
       filter.priority = req.query.priority;
     }
 
@@ -49,7 +50,7 @@ export const createTask = async (req, res, next) => {
     const task = await Task.create({
       userId: String(req.user.id),
       title: title.trim(),
-      description: description || '',
+      description: description ? description.trim() : '',
       subjectId: subjectId || null,
       priority: priority || 'medium',
       status: status || 'pending',
@@ -72,6 +73,11 @@ export const createTask = async (req, res, next) => {
  */
 export const getTaskById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      res.status(404);
+      throw new Error('Task not found');
+    }
+
     const task = await Task.findById(req.params.id);
 
     if (!task) {
@@ -79,7 +85,7 @@ export const getTaskById = async (req, res, next) => {
       throw new Error('Task not found');
     }
 
-    if (task.userId !== String(req.user.id)) {
+    if (String(task.userId) !== String(req.user.id)) {
       res.status(403);
       throw new Error('Not authorized to access this task');
     }
@@ -100,6 +106,11 @@ export const getTaskById = async (req, res, next) => {
  */
 export const updateTask = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      res.status(404);
+      throw new Error('Task not found');
+    }
+
     const task = await Task.findById(req.params.id);
 
     if (!task) {
@@ -107,14 +118,19 @@ export const updateTask = async (req, res, next) => {
       throw new Error('Task not found');
     }
 
-    if (task.userId !== String(req.user.id)) {
+    if (String(task.userId) !== String(req.user.id)) {
       res.status(403);
       throw new Error('Not authorized to modify this task');
     }
 
+    const updatePayload = { ...req.body };
+    if (updatePayload.title) {
+      updatePayload.title = updatePayload.title.trim();
+    }
+
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      { $set: updatePayload },
       { new: true, runValidators: true }
     );
 
@@ -134,6 +150,11 @@ export const updateTask = async (req, res, next) => {
  */
 export const deleteTask = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      res.status(404);
+      throw new Error('Task not found');
+    }
+
     const task = await Task.findById(req.params.id);
 
     if (!task) {
@@ -141,7 +162,7 @@ export const deleteTask = async (req, res, next) => {
       throw new Error('Task not found');
     }
 
-    if (task.userId !== String(req.user.id)) {
+    if (String(task.userId) !== String(req.user.id)) {
       res.status(403);
       throw new Error('Not authorized to delete this task');
     }
