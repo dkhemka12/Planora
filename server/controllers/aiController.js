@@ -1,6 +1,11 @@
+import {
+  generateStructuredStudyPlan,
+  generateConceptExplanation,
+} from '../services/llmService.js';
+
 /**
- * AI Controller (Foundation implementation)
- * Handles structured study plan generation and concept explanation.
+ * AI Controller
+ * Handles structured study plan generation and concept explanation using LLM service.
  */
 
 /**
@@ -12,9 +17,9 @@ export const generateStudyPlan = async (req, res, next) => {
   try {
     const { subject, days, hoursPerDay, knowledgeLevel, weakTopics, examDate } = req.body;
 
-    if (!subject || !days || !hoursPerDay) {
+    if (!subject || subject.trim() === '') {
       res.status(400);
-      throw new Error('Please provide subject, number of days, and hours per day');
+      throw new Error('Subject is required');
     }
 
     const numDays = parseInt(days, 10);
@@ -25,33 +30,40 @@ export const generateStudyPlan = async (req, res, next) => {
       throw new Error('Days must be a positive integer');
     }
 
+    if (numDays > 60) {
+      res.status(400);
+      throw new Error('Study plan cannot exceed 60 days');
+    }
+
     if (isNaN(numHours) || numHours <= 0) {
       res.status(400);
       throw new Error('Hours per day must be a positive number');
     }
 
-    // Structured plan schema matching contract in LLD Section 8
-    // Full LLM API call will be connected in Phase 8
-    const mockOrGeneratedPlan = Array.from({ length: numDays }, (_, i) => ({
-      day: i + 1,
-      topic: `${subject} - Module ${i + 1}: ${weakTopics ? `Focus on ${weakTopics}` : 'Core Fundamentals'}`,
-      duration: Math.round(numHours * 60),
-      tasks: [
-        `Review core theory for ${subject} Day ${i + 1}`,
-        `Solve practice exercises for ${knowledgeLevel || 'intermediate'} level`,
-        `Complete active recall quiz`,
-      ],
-    }));
+    if (numHours > 16) {
+      res.status(400);
+      throw new Error('Hours per day cannot exceed 16 hours');
+    }
 
-    res.status(200).json({
-      success: true,
-      subject,
+    const result = await generateStructuredStudyPlan({
+      subject: subject.trim(),
       days: numDays,
       hoursPerDay: numHours,
       knowledgeLevel: knowledgeLevel || 'intermediate',
-      weakTopics: weakTopics || '',
+      weakTopics: weakTopics ? weakTopics.trim() : '',
       examDate: examDate || null,
-      plan: mockOrGeneratedPlan,
+    });
+
+    res.status(200).json({
+      success: true,
+      source: result.source,
+      subject: subject.trim(),
+      days: numDays,
+      hoursPerDay: numHours,
+      knowledgeLevel: knowledgeLevel || 'intermediate',
+      weakTopics: weakTopics ? weakTopics.trim() : '',
+      examDate: examDate || null,
+      plan: result.plan,
     });
   } catch (error) {
     next(error);
@@ -72,20 +84,25 @@ export const explainConcept = async (req, res, next) => {
       throw new Error('Topic is required for explanation');
     }
 
-    const level = difficulty || 'beginner';
+    const level = difficulty && ['beginner', 'intermediate', 'advanced'].includes(difficulty.toLowerCase())
+      ? difficulty.toLowerCase()
+      : 'beginner';
+
+    const result = await generateConceptExplanation({
+      topic: topic.trim(),
+      difficulty: level,
+    });
 
     res.status(200).json({
       success: true,
-      topic,
-      difficulty: level,
-      explanation: `Here is a clear explanation of ${topic} tailored for a ${level} level. (LLM integration connected in Phase 8).`,
-      keyTakeaways: [
-        `Fundamental concept behind ${topic}`,
-        `Practical application in study routines`,
-        `Common pitfalls to avoid`,
-      ],
+      source: result.source,
+      topic: result.topic,
+      difficulty: result.difficulty,
+      explanation: result.explanation,
+      keyTakeaways: result.keyTakeaways,
     });
   } catch (error) {
     next(error);
   }
 };
+

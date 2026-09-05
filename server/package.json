@@ -16,6 +16,7 @@
     "test:subjects": "node scripts/testSubjects.js",
     "test:tasks": "node scripts/testTasks.js",
     "test:dashboard": "node scripts/testDashboard.js",
+    "test:ai": "node scripts/testAIIntegration.js",
     "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {
