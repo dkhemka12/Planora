@@ -20,7 +20,8 @@
     "test:ai-frontend": "npm --prefix server run test:ai-frontend",
     "test:saved-plans": "npm --prefix server run test:saved-plans",
     "test:js": "npm --prefix server run test:js",
-    "test:all": "npm run test:foundation && npm run test:auth && npm run test:subjects && npm run test:tasks && npm run test:dashboard && npm run test:saved-plans && npm run test:js",
+    "test:phase12": "npm --prefix server run test:phase12",
+    "test:all": "npm run test:foundation && npm run test:auth && npm run test:subjects && npm run test:tasks && npm run test:dashboard && npm run test:saved-plans && npm run test:js && npm run test:phase12",
     "check:gemini": "npm --prefix server run check:gemini"
   },
   "keywords": [

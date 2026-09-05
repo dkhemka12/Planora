@@ -20,6 +20,7 @@
     "test:ai-frontend": "node scripts/testAIFrontendFlow.js",
     "test:saved-plans": "node scripts/testSavedPlans.js",
     "test:js": "node scripts/testJSDemonstrations.js",
+    "test:phase12": "node scripts/testPhase12E2E.js",
     "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {
