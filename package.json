@@ -15,6 +15,7 @@
     "test:auth": "npm --prefix server run test:auth",
     "test:subjects": "npm --prefix server run test:subjects",
     "test:tasks": "npm --prefix server run test:tasks",
+    "test:dashboard": "npm --prefix server run test:dashboard",
     "check:gemini": "npm --prefix server run check:gemini"
   },
   "keywords": [

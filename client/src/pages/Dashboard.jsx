@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  BookOpen, 
-  CheckSquare, 
-  Clock, 
-  CheckCircle2, 
-  Sparkles, 
-  Plus, 
+import {
+  BookOpen,
+  CheckSquare,
+  Clock,
+  CheckCircle2,
+  Sparkles,
+  Plus,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import StatsCard from '../components/StatsCard';
 import ProgressCard from '../components/ProgressCard';
@@ -28,14 +29,18 @@ const Dashboard = () => {
     try {
       setIsLoading(true);
       setError('');
-      const [subjectsData, tasksData] = await Promise.all([
-        subjectAPI.getAll().catch(() => []),
-        taskAPI.getAll().catch(() => []),
+      const [subjectsRes, tasksRes] = await Promise.all([
+        subjectAPI.getAll().catch(() => ({ data: [] })),
+        taskAPI.getAll().catch(() => ({ data: [] })),
       ]);
-      setSubjects(Array.isArray(subjectsData) ? subjectsData : []);
-      setTasks(Array.isArray(tasksData) ? tasksData : []);
+
+      const subjectsList = Array.isArray(subjectsRes) ? subjectsRes : (subjectsRes?.data || []);
+      const tasksList = Array.isArray(tasksRes) ? tasksRes : (tasksRes?.data || []);
+
+      setSubjects(subjectsList);
+      setTasks(tasksList);
     } catch (err) {
-      setError('Unable to load dashboard data. Please make sure backend is running.');
+      setError('Unable to load dashboard data. Please make sure the server is running.');
     } finally {
       setIsLoading(false);
     }
@@ -47,34 +52,60 @@ const Dashboard = () => {
 
   const handleToggleTaskStatus = async (task) => {
     const nextStatus = task.status === 'completed' ? 'pending' : 'completed';
+    // Optimistic UI update
+    setTasks((prev) =>
+      prev.map((t) => (t._id === task._id ? { ...t, status: nextStatus } : t))
+    );
+
     try {
-      const updated = await taskAPI.update(task._id, { status: nextStatus });
-      setTasks(prev => prev.map(t => (t._id === task._id ? updated : t)));
+      const res = await taskAPI.update(task._id, { status: nextStatus });
+      const updated = res?.data || res;
+      setTasks((prev) => prev.map((t) => (t._id === task._id ? updated : t)));
     } catch (err) {
-      console.error('Failed to toggle task status', err);
+      // Rollback on error
+      setTasks((prev) =>
+        prev.map((t) => (t._id === task._id ? { ...t, status: task.status } : t))
+      );
+      setError('Failed to update task status');
     }
   };
 
-  const completedCount = tasks.filter(t => t.status === 'completed').length;
-  const pendingCount = tasks.filter(t => t.status === 'pending').length;
+  const completedCount = tasks.filter((t) => t.status === 'completed').length;
+  const pendingCount = tasks.filter((t) => t.status === 'pending').length;
   const recentTasks = tasks.slice(0, 5);
 
   return (
     <div className="page-container">
       {/* Welcome Banner */}
-      <div className="glass-card" style={{
-        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)',
-        border: '1px solid rgba(99, 102, 241, 0.3)',
-        marginBottom: '2rem',
-        padding: '2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1.5rem'
-      }}>
+      <div
+        className="glass-card"
+        style={{
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)',
+          border: '1px solid rgba(99, 102, 241, 0.3)',
+          marginBottom: '2rem',
+          padding: '2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1.5rem',
+        }}
+      >
         <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', background: 'rgba(99, 102, 241, 0.3)', color: '#fff', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.2rem 0.6rem',
+              borderRadius: 'var(--radius-full)',
+              background: 'rgba(99, 102, 241, 0.3)',
+              color: '#fff',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              marginBottom: '0.75rem',
+            }}
+          >
             <Sparkles size={13} /> AI Study Copilot
           </div>
           <h1 style={{ fontSize: '1.85rem', fontWeight: 800 }}>
@@ -86,17 +117,11 @@ const Dashboard = () => {
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => navigate('/ai-planner')}
-            className="btn btn-primary"
-          >
+          <button onClick={() => navigate('/ai-planner')} className="btn btn-primary">
             <Sparkles size={16} />
             <span>Generate Study Plan</span>
           </button>
-          <button
-            onClick={() => navigate('/tasks')}
-            className="btn btn-secondary"
-          >
+          <button onClick={() => navigate('/tasks')} className="btn btn-secondary">
             <Plus size={16} />
             <span>Add Task</span>
           </button>
@@ -104,17 +129,19 @@ const Dashboard = () => {
       </div>
 
       {error && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '1rem',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--accent-rose-bg)',
-          color: 'var(--accent-rose)',
-          marginBottom: '1.5rem',
-          fontSize: '0.9rem'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '1rem',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--accent-rose-bg)',
+            color: 'var(--accent-rose)',
+            marginBottom: '1.5rem',
+            fontSize: '0.9rem',
+          }}
+        >
           <AlertCircle size={18} />
           <span>{error}</span>
         </div>
@@ -153,7 +180,14 @@ const Dashboard = () => {
       </div>
 
       {/* Progress & Recent Tasks Split */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: '1.5rem',
+          marginBottom: '2rem',
+        }}
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <ProgressCard completed={completedCount} total={tasks.length} />
 
@@ -190,21 +224,25 @@ const Dashboard = () => {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Recent Tasks</h3>
-            <button
-              onClick={() => navigate('/tasks')}
-              className="btn btn-outline btn-sm"
-            >
+            <button onClick={() => navigate('/tasks')} className="btn btn-outline btn-sm">
               <span>View All</span>
               <ArrowRight size={13} />
             </button>
           </div>
 
-          <TaskList
-            tasks={recentTasks}
-            subjects={subjects}
-            onToggleStatus={handleToggleTaskStatus}
-            emptyMessage="No tasks created yet. Click 'Add Task' to get started!"
-          />
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+              <Loader2 className="animate-spin" size={28} style={{ margin: '0 auto 0.75rem' }} />
+              <p style={{ fontSize: '0.875rem' }}>Loading recent tasks...</p>
+            </div>
+          ) : (
+            <TaskList
+              tasks={recentTasks}
+              subjects={subjects}
+              onToggleStatus={handleToggleTaskStatus}
+              emptyMessage="No tasks created yet. Click 'Add Task' to get started!"
+            />
+          )}
         </div>
       </div>
     </div>
