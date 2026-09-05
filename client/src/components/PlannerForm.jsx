@@ -150,18 +150,33 @@ const PlannerForm = ({ onGenerate, isLoading = false, subjects = [] }) => {
         </div>
       </div>
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="planner-weak">Weak Topics / Focus Areas (Optional)</label>
-        <input
-          id="planner-weak"
-          name="weakTopics"
-          type="text"
-          className="form-input"
-          placeholder="e.g. Deadlocks, Virtual Memory, Paging"
-          value={formData.weakTopics}
-          onChange={handleChange}
-          disabled={isLoading}
-        />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem', marginBottom: '1.25rem' }}>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="form-label" htmlFor="planner-weak">Weak Topics / Focus Areas (Optional)</label>
+          <input
+            id="planner-weak"
+            name="weakTopics"
+            type="text"
+            className="form-input"
+            placeholder="e.g. Deadlocks, Virtual Memory, Paging"
+            value={formData.weakTopics}
+            onChange={handleChange}
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="form-label" htmlFor="planner-exam">Target Exam Date (Optional)</label>
+          <input
+            id="planner-exam"
+            name="examDate"
+            type="date"
+            className="form-input"
+            value={formData.examDate}
+            onChange={handleChange}
+            disabled={isLoading}
+          />
+        </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>

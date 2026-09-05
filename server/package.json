@@ -17,6 +17,7 @@
     "test:tasks": "node scripts/testTasks.js",
     "test:dashboard": "node scripts/testDashboard.js",
     "test:ai": "node scripts/testAIIntegration.js",
+    "test:ai-frontend": "node scripts/testAIFrontendFlow.js",
     "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {
