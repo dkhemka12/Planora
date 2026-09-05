@@ -18,12 +18,16 @@ const Subjects = () => {
     try {
       setIsLoading(true);
       setError('');
-      const [subs, tsks] = await Promise.all([
-        subjectAPI.getAll().catch(() => []),
-        taskAPI.getAll().catch(() => []),
+      const [subsRes, tsksRes] = await Promise.all([
+        subjectAPI.getAll().catch(() => ({ data: [] })),
+        taskAPI.getAll().catch(() => ({ data: [] })),
       ]);
-      setSubjects(Array.isArray(subs) ? subs : []);
-      setTasks(Array.isArray(tsks) ? tsks : []);
+
+      const subsList = Array.isArray(subsRes) ? subsRes : (subsRes?.data || []);
+      const tsksList = Array.isArray(tsksRes) ? tsksRes : (tsksRes?.data || []);
+
+      setSubjects(subsList);
+      setTasks(tsksList);
     } catch (err) {
       setError(err.message || 'Failed to fetch subjects');
     } finally {
@@ -40,12 +44,14 @@ const Subjects = () => {
       setIsSubmitting(true);
       setError('');
       if (editingSubject) {
-        const updated = await subjectAPI.update(editingSubject.id, formData);
-        setSubjects(prev => prev.map(s => (s.id === editingSubject.id ? updated : s)));
+        const res = await subjectAPI.update(editingSubject.id, formData);
+        const updated = res?.data || res;
+        setSubjects((prev) => prev.map((s) => (s.id === editingSubject.id ? updated : s)));
         setSuccessMsg(`Subject "${updated.name}" updated successfully!`);
       } else {
-        const created = await subjectAPI.create(formData);
-        setSubjects(prev => [...prev, created]);
+        const res = await subjectAPI.create(formData);
+        const created = res?.data || res;
+        setSubjects((prev) => [...prev, created]);
         setSuccessMsg(`Subject "${created.name}" created successfully!`);
       }
       setShowForm(false);
@@ -68,7 +74,7 @@ const Subjects = () => {
     if (!window.confirm('Are you sure you want to delete this subject?')) return;
     try {
       await subjectAPI.delete(id);
-      setSubjects(prev => prev.filter(s => s.id !== id));
+      setSubjects((prev) => prev.filter((s) => s.id !== id));
       setSuccessMsg('Subject deleted successfully');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
@@ -107,7 +113,7 @@ const Subjects = () => {
           background: 'var(--accent-rose-bg)',
           color: 'var(--accent-rose)',
           marginBottom: '1.5rem',
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
         }}>
           <AlertCircle size={16} />
           <span>{error}</span>
@@ -121,7 +127,7 @@ const Subjects = () => {
           background: 'var(--accent-emerald-bg)',
           color: 'var(--accent-emerald)',
           marginBottom: '1.5rem',
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
         }}>
           {successMsg}
         </div>
@@ -159,7 +165,7 @@ const Subjects = () => {
       ) : (
         <div className="cards-grid">
           {subjects.map((sub) => {
-            const taskCount = tasks.filter(t => String(t.subjectId) === String(sub.id)).length;
+            const taskCount = tasks.filter((t) => String(t.subjectId) === String(sub.id)).length;
             return (
               <SubjectCard
                 key={sub.id}
