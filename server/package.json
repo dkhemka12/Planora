@@ -18,6 +18,7 @@
     "test:dashboard": "node scripts/testDashboard.js",
     "test:ai": "node scripts/testAIIntegration.js",
     "test:ai-frontend": "node scripts/testAIFrontendFlow.js",
+    "test:saved-plans": "node scripts/testSavedPlans.js",
     "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {

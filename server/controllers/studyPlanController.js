@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { StudyPlan } from '../models/StudyPlan.js';
 
 /**
@@ -28,14 +29,14 @@ export const saveStudyPlan = async (req, res, next) => {
   try {
     const { subject, days, plan } = req.body;
 
-    if (!subject || !days || !plan || !Array.isArray(plan)) {
+    if (!subject || !days || !plan || !Array.isArray(plan) || plan.length === 0) {
       res.status(400);
-      throw new Error('Please provide subject, days, and a valid plan array');
+      throw new Error('Please provide subject, days, and a valid non-empty plan array');
     }
 
     const savedPlan = await StudyPlan.create({
       userId: String(req.user.id),
-      subject,
+      subject: subject.trim ? subject.trim() : subject,
       days: parseInt(days, 10),
       plan,
     });
@@ -56,6 +57,11 @@ export const saveStudyPlan = async (req, res, next) => {
  */
 export const getStudyPlanById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      res.status(404);
+      throw new Error('Study plan not found');
+    }
+
     const studyPlan = await StudyPlan.findById(req.params.id);
 
     if (!studyPlan) {
@@ -63,7 +69,7 @@ export const getStudyPlanById = async (req, res, next) => {
       throw new Error('Study plan not found');
     }
 
-    if (studyPlan.userId !== String(req.user.id)) {
+    if (String(studyPlan.userId) !== String(req.user.id)) {
       res.status(403);
       throw new Error('Not authorized to access this study plan');
     }
@@ -84,6 +90,11 @@ export const getStudyPlanById = async (req, res, next) => {
  */
 export const deleteStudyPlan = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      res.status(404);
+      throw new Error('Study plan not found');
+    }
+
     const studyPlan = await StudyPlan.findById(req.params.id);
 
     if (!studyPlan) {
@@ -91,7 +102,7 @@ export const deleteStudyPlan = async (req, res, next) => {
       throw new Error('Study plan not found');
     }
 
-    if (studyPlan.userId !== String(req.user.id)) {
+    if (String(studyPlan.userId) !== String(req.user.id)) {
       res.status(403);
       throw new Error('Not authorized to delete this study plan');
     }
