@@ -19,6 +19,7 @@
     "test:ai": "node scripts/testAIIntegration.js",
     "test:ai-frontend": "node scripts/testAIFrontendFlow.js",
     "test:saved-plans": "node scripts/testSavedPlans.js",
+    "test:js": "node scripts/testJSDemonstrations.js",
     "check:gemini": "node scripts/checkGeminiKey.js"
   },
   "dependencies": {

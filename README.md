@@ -107,3 +107,26 @@ Planora/
 3. Start development servers:
    - Backend: `npm run dev:server` (running on `http://localhost:5000`)
    - Frontend: `npm run dev:client` (running on `http://localhost:5173`)
+
+---
+
+## 🧠 JavaScript Core Concepts (Phase 11)
+
+Planora intentionally showcases 6 foundational JavaScript concepts embedded directly in real production architecture:
+1. **async / await**: Non-blocking async endpoints, database transactions, and retry logic.
+2. **Promises**: Concurrent execution (`Promise.all`), timeout races (`Promise.race` with `withTimeout`).
+3. **Callbacks**: Error-first callbacks, Express middleware (`req, res, next`), higher-order array methods.
+4. **Closures**: Encapsulated state memoization (`createMemoizer`), rate limiting, and client-side `debounce`.
+5. **Event Loop**: Call stack execution priority, microtask queue (`Promise.then`) vs macrotask queue (`setTimeout`).
+6. **Hoisting**: Function declaration hoisting vs. Temporal Dead Zone (`let` / `const`).
+
+📖 **Read the in-depth architectural guide**: [`docs/JAVASCRIPT_CONCEPTS.md`](docs/JAVASCRIPT_CONCEPTS.md)
+
+### Running Automated Test Suites
+```bash
+# Run JavaScript Core Concepts test suite (22 assertions)
+npm run test:js
+
+# Run full regression test suite (Foundation, Auth, Subjects, Tasks, Dashboard, Saved Plans, JS)
+npm run test:all
+```

@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { withTimeout } from '../utils/jsPatterns.js';
 
 dotenv.config();
 
@@ -89,11 +90,13 @@ async function callGemini(prompt, systemInstruction = null) {
     }
 
     try {
-      const response = await fetch(url, {
+      const fetchPromise = fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestPayload),
       });
+
+      const response = await withTimeout(fetchPromise, 30000, `LLM call to ${model} timed out after 30 seconds`);
 
       const data = await response.json();
 
